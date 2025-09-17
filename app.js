@@ -8,13 +8,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const buildingsContainer = document.getElementById("buildingsContainer");
   const loginContainer = document.getElementById("loginContainer");
   const bookingContainer = document.getElementById("bookingContainer");
+  const buildingFilter = document.getElementById("buildingFilter");
+  const timeFilter = document.getElementById("timeFilter");
 
-  let logoutBtn = null;
+  // Move logoutBtn outside bookingContainer so it won't be hidden
+  let logoutBtn = document.createElement("button");
+  logoutBtn.textContent = "Logout";
+  logoutBtn.classList.add("logout-btn");
+  logoutBtn.style.display = "none"; // Hide initially
+  document.body.appendChild(logoutBtn);
 
-  function renderBuildings() {
+  logoutBtn.addEventListener("click", () => {
+    currentUser = null;
+    bookingContainer.style.display = "none";
+    loginContainer.style.display = "block";
+    logoutBtn.style.display = "none";
+    buildingFilter.value = "";
+    timeFilter.value = "";
+    // Clear buildings container
+    buildingsContainer.innerHTML = "";
+  });
+
+  // Render buildings accepts filtered building data
+  function renderBuildings(data) {
     buildingsContainer.innerHTML = "";
 
-    buildingsData.forEach((building) => {
+    data.forEach((building) => {
       const buildingElem = document.createElement("section");
       buildingElem.classList.add("building");
       buildingElem.setAttribute("role", "listitem");
@@ -39,10 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
           roomElem.style.cursor = "default";
         } else if (room.status === "soon") {
           roomElem.classList.add("orange");
-          roomElem.style.cursor = currentUser && !currentUser.isStudent ? "pointer" : "default";
+          roomElem.style.cursor = "pointer"; // Always pointer for available/soon, fix visibility
         } else {
           roomElem.classList.add("green");
-          roomElem.style.cursor = currentUser && !currentUser.isStudent ? "pointer" : "default";
+          roomElem.style.cursor = "pointer"; // Always pointer to indicate availability
         }
 
         const tooltip = document.createElement("div");
@@ -56,7 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
           if (
             currentUser &&
             !currentUser.isStudent &&
-            currentUser.id.toLowerCase() === room.bookedBy.toLowerCase().replace(/\s/g, '')
+            currentUser.id.toLowerCase() ===
+            room.bookedBy.toLowerCase().replace(/\s/g, "")
           ) {
             const cancelBtn = document.createElement("button");
             cancelBtn.textContent = "Cancel Booking";
@@ -64,26 +84,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
             cancelBtn.addEventListener("click", (e) => {
               e.stopPropagation();
-              if (confirm(`Are you sure you want to cancel booking for ${room.name}?`)) {
+              if (
+                confirm(`Are you sure you want to cancel booking for ${room.name}?`)
+              ) {
                 room.status = "available";
                 room.bookedBy = null;
                 room.bookedUntil = null;
                 alert(`Booking for ${room.name} cancelled.`);
-                renderBuildings();
+                applyFilters();
               }
             });
 
             tooltip.appendChild(document.createElement("br"));
             tooltip.appendChild(cancelBtn);
           }
+        } else if (room.status === "soon" || room.status === "available") {
+          tooltip.textContent =
+            room.status === "soon"
+              ? "Will be available in next 1 hour."
+              : "Room available.";
 
-        } else if (room.status === "soon") {
-          tooltip.textContent = "Will be available in next 1 hour.";
-
-          if (
-            currentUser &&
-            !currentUser.isStudent
-          ) {
+          if (currentUser && !currentUser.isStudent) {
             const bookBtn = document.createElement("button");
             bookBtn.textContent = "Book Room";
             styleButton(bookBtn, "#00bfa5");
@@ -100,39 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? untilHour - 12 + ":00 PM"
                     : untilHour + ":00 AM";
                 alert(`Room ${room.name} booked successfully.`);
-                renderBuildings();
-              }
-            });
-
-            tooltip.appendChild(document.createElement("br"));
-            tooltip.appendChild(bookBtn);
-          }
-
-        } else { // available
-          tooltip.textContent = "Room available.";
-
-          if (
-            currentUser &&
-            !currentUser.isStudent &&
-            (room.status === "available")
-          ) {
-            const bookBtn = document.createElement("button");
-            bookBtn.textContent = "Book Room";
-            styleButton(bookBtn, "#00bfa5");
-
-            bookBtn.addEventListener("click", (e) => {
-              e.stopPropagation();
-              if (confirm(`Are you sure you want to book ${room.name}?`)) {
-                room.status = "booked";
-                room.bookedBy = currentUser.id;
-                const now = new Date();
-                const untilHour = now.getHours() + 1;
-                room.bookedUntil =
-                  untilHour > 12
-                    ? untilHour - 12 + ":00 PM"
-                    : untilHour + ":00 AM";
-                alert(`Room ${room.name} booked successfully.`);
-                renderBuildings();
+                applyFilters();
               }
             });
 
@@ -144,10 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
         roomElem.appendChild(tooltip);
 
         // Dynamic tooltip positioning for edge rooms
-
         roomElem.addEventListener("mouseenter", () => {
           roomElem.classList.add("tooltip-visible");
-          const tooltip = roomElem.querySelector('.tooltip');
+          const tooltip = roomElem.querySelector(".tooltip");
           const col = roomIndex % 4;
 
           if (col === 0) {
@@ -167,9 +155,12 @@ document.addEventListener("DOMContentLoaded", () => {
             tooltip.style.transform = "translateX(-50%) translateY(-130%)";
           }
 
-          if (roomIndex < 12) {
+          if (roomIndex < 20) {
             tooltip.style.top = "44px"; // show below the room
-            tooltip.style.transform = tooltip.style.transform.replace('translateY(-130%)', 'translateY(0)');
+            tooltip.style.transform = tooltip.style.transform.replace(
+              "translateY(-130%)",
+              "translateY(0)"
+            );
           } else {
             tooltip.style.top = "20px"; // show above the room
             tooltip.style.transform += " translateY(-130%)";
@@ -199,27 +190,31 @@ document.addEventListener("DOMContentLoaded", () => {
     button.style.fontSize = "0.8rem";
   }
 
-  function addLogoutButton() {
-    if (!logoutBtn) {
-      logoutBtn = document.createElement("button");
-      logoutBtn.textContent = "Logout";
-      logoutBtn.classList.add('logout-btn');
+  // Filtering function - filters buildings based on building and time slot filter values
+  function applyFilters() {
+    let filteredBuildings = buildingsData;
 
-      logoutBtn.addEventListener('click', () => {
-        currentUser = null;
-        bookingContainer.style.display = 'none';
-        loginContainer.style.display = 'block';
-        if (logoutBtn.parentElement) {
-          logoutBtn.parentElement.removeChild(logoutBtn);
-          logoutBtn = null;
-        }
-      });
-
-      bookingContainer.style.position = 'relative'; // ensure positioning context
-      bookingContainer.appendChild(logoutBtn);
+    const buildingId = buildingFilter.value;
+    if (buildingId) {
+      filteredBuildings = filteredBuildings.filter((b) => b.id === buildingId);
     }
-  }
+    
+    const timeSlot = timeFilter.value;
+    if (timeSlot) {
+      filteredBuildings = filteredBuildings
+        .map((b) => {
+          const filteredRooms = b.rooms.filter(
+            (r) =>
+              (r.status === "available" || r.status === "soon") &&
+              r.timeSlot === timeSlot
+          );
+          return { ...b, rooms: filteredRooms };
+        })
+        .filter((b) => b.rooms.length > 0);
+    }
 
+    renderBuildings(filteredBuildings);
+  }
 
   const studentTab = document.getElementById("studentTab");
   const teacherTab = document.getElementById("teacherTab");
@@ -332,19 +327,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loginContainer.style.display = "none";
     bookingContainer.style.display = "block";
-    addLogoutButton();
-    renderBuildings();
+    logoutBtn.style.display = "block";
+    applyFilters();
 
     return true;
   }
 
-  document.getElementById("studentLoginForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    validateLogin(e.target, document.getElementById("studentLoginError"), true);
-  });
+  document
+    .getElementById("studentLoginForm")
+    .addEventListener("submit", (e) => {
+      e.preventDefault();
+      validateLogin(e.target, document.getElementById("studentLoginError"), true);
+    });
 
-  document.getElementById("teacherLoginForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    validateLogin(e.target, document.getElementById("teacherLoginError"), false);
-  });
+  document
+    .getElementById("teacherLoginForm")
+    .addEventListener("submit", (e) => {
+      e.preventDefault();
+      validateLogin(e.target, document.getElementById("teacherLoginError"), false);
+    });
+
+  // Add event listeners for filter changes
+  buildingFilter.addEventListener("change", applyFilters);
+  timeFilter.addEventListener("change", applyFilters);
 });
