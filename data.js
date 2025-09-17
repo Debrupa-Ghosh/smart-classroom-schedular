@@ -1,21 +1,25 @@
+const timeSlots = [
+  "08:00", "09:00", "10:00", "11:00", "12:00",
+  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
+];
+
 const buildingsData = [
   {
     id: "building-1",
-    name: "Building A",
+    name: "Building 1",
     rooms: Array.from({ length: 20 }, (_, i) => {
       const number = i + 1;
       let status = "available";
       let bookedBy = null;
       let bookedUntil = null;
-      // Pre-book some rooms only by teacher1 or teacher2
       if (number === 5) {
         status = "booked";
         bookedBy = "teacher1";
-        bookedUntil = "3:00 PM";
+        bookedUntil = "15:00";
       } else if (number === 10) {
         status = "booked";
         bookedBy = "teacher2";
-        bookedUntil = "4:00 PM";
+        bookedUntil = "16:00";
       } else if (number % 3 === 0) {
         status = "soon";
       }
@@ -25,12 +29,13 @@ const buildingsData = [
         status,
         bookedBy,
         bookedUntil,
+        timeSlot: timeSlots[i % timeSlots.length],
       };
     }),
   },
   {
     id: "building-2",
-    name: "Building B",
+    name: "Building 2",
     rooms: Array.from({ length: 20 }, (_, i) => {
       const number = i + 1;
       let status = "available";
@@ -39,11 +44,11 @@ const buildingsData = [
       if (number === 4) {
         status = "booked";
         bookedBy = "teacher1";
-        bookedUntil = "2:00 PM";
+        bookedUntil = "14:00";
       } else if (number === 12) {
         status = "booked";
         bookedBy = "teacher2";
-        bookedUntil = "3:30 PM";
+        bookedUntil = "15:30";
       } else if (number % 6 === 0) {
         status = "soon";
       }
@@ -53,41 +58,44 @@ const buildingsData = [
         status,
         bookedBy,
         bookedUntil,
+        timeSlot: timeSlots[i % timeSlots.length],
       };
     }),
   },
-  // The other buildings start with all rooms available or soon
   {
     id: "building-3",
-    name: "Building C",
+    name: "Building 3",
     rooms: Array.from({ length: 20 }, (_, i) => ({
       id: `room-${i + 1}`,
       name: `Room ${i + 1}`,
       status: "available",
       bookedBy: null,
       bookedUntil: null,
+      timeSlot: timeSlots[i % timeSlots.length],
     })),
   },
   {
     id: "building-4",
-    name: "Building D",
+    name: "Building 4",
     rooms: Array.from({ length: 20 }, (_, i) => ({
       id: `room-${i + 1}`,
       name: `Room ${i + 1}`,
       status: "soon",
       bookedBy: null,
       bookedUntil: null,
+      timeSlot: timeSlots[i % timeSlots.length],
     })),
   },
   {
     id: "building-5",
-    name: "Building E",
+    name: "Building 5",
     rooms: Array.from({ length: 20 }, (_, i) => ({
       id: `room-${i + 1}`,
       name: `Room ${i + 1}`,
       status: "available",
       bookedBy: null,
       bookedUntil: null,
+      timeSlot: timeSlots[i % timeSlots.length],
     })),
   },
 ];
