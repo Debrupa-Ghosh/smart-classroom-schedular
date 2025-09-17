@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Classroom Booking & Login</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <h1>Smart Classroom Booking System</h1>
+  <div class="container">
+
+    <!-- Login Container: visible initially -->
+    <div id="loginContainer">
+      <!-- Login Section -->
+      <section class="login-section" aria-label="Login Form">
+        <div class="tab-buttons" role="tablist">
+          <button id="studentTab" class="active" aria-selected="true" role="tab" tabindex="0">Student Login</button>
+          <button id="teacherTab" role="tab" tabindex="-1">Teacher Login</button>
+        </div>
+
+        <!-- Student Login Form -->
+        <form id="studentLoginForm" role="tabpanel" aria-hidden="false" novalidate>
+          <label for="studentId">Student ID</label>
+          <input type="text" id="studentId" name="studentId" autocomplete="username" required />
+          
+          <label for="studentEmail">Email (for verification)</label>
+          <input type="email" id="studentEmail" name="studentEmail" autocomplete="email" required />
+          
+          <label for="studentPassword">Password</label>
+          <input type="password" id="studentPassword" name="studentPassword" autocomplete="current-password" required minlength="6" />
+          
+          <button type="submit" class="submit-btn">Login</button>
+          <button type="button" class="link-button" id="studentForgotBtn">Forgot Password?</button>
+          <div id="studentLoginError" class="error-msg" aria-live="assertive"></div>
+        </form>
+
+        <!-- Teacher Login Form -->
+        <form id="teacherLoginForm" role="tabpanel" aria-hidden="true" style="display:none;" novalidate>
+          <label for="teacherId">Teacher ID</label>
+          <input type="text" id="teacherId" name="teacherId" autocomplete="username" required />
+          
+          <label for="teacherEmail">Email (for verification)</label>
+          <input type="email" id="teacherEmail" name="teacherEmail" autocomplete="email" required />
+          
+          <label for="teacherPassword">Password</label>
+          <input type="password" id="teacherPassword" name="teacherPassword" autocomplete="current-password" required minlength="6" />
+          
+          <button type="submit" class="submit-btn">Login</button>
+          <button type="button" class="link-button" id="teacherForgotBtn">Forgot Password?</button>
+          <div id="teacherLoginError" class="error-msg" aria-live="assertive"></div>
+        </form>
+      </section>
+    </div>
+
+    <!-- Booking Container: hidden initially -->
+    <div id="bookingContainer" style="display:none;">
+      <!-- Booking Section -->
+      <section class="booking-section" aria-label="Classroom Booking Grid">
+        <h2></h2>
+        <div class="buildings-container" id="buildingsContainer" role="list">
+          <!-- Buildings and rooms will be generated here -->
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- Password Reset Modal -->
+  <div class="modal-bg" id="modalBg" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="modal">
+      <h3 id="modalTitle">Reset Password</h3>
+      <form id="resetPasswordForm" novalidate>
+        <label for="newPassword1">New Password</label>
+        <input type="password" id="newPassword1" name="newPassword1" required minlength="6" autocomplete="new-password" />
+        
+        <label for="newPassword2">Confirm New Password</label>
+        <input type="password" id="newPassword2" name="newPassword2" required minlength="6" autocomplete="new-password" />
+        
+        <button type="submit">Set New Password</button>
+      </form>
+      <button class="link-button" id="modalCloseBtn" aria-label="Close reset password dialog" style="margin-top:12px;">Cancel</button>
+      <div id="resetPasswordError" class="error-msg" aria-live="assertive"></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
