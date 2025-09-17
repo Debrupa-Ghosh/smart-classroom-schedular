@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Smart Classroom Booking & Login</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
 
   <h1>Smart Classroom Booking System</h1>
@@ -24,13 +26,14 @@
         <form id="studentLoginForm" role="tabpanel" aria-hidden="false" novalidate>
           <label for="studentId">Student ID</label>
           <input type="text" id="studentId" name="studentId" autocomplete="username" required />
-          
+
           <label for="studentEmail">Email (for verification)</label>
           <input type="email" id="studentEmail" name="studentEmail" autocomplete="email" required />
-          
+
           <label for="studentPassword">Password</label>
-          <input type="password" id="studentPassword" name="studentPassword" autocomplete="current-password" required minlength="6" />
-          
+          <input type="password" id="studentPassword" name="studentPassword" autocomplete="current-password" required
+            minlength="6" />
+
           <button type="submit" class="submit-btn">Login</button>
           <button type="button" class="link-button" id="studentForgotBtn">Forgot Password?</button>
           <div id="studentLoginError" class="error-msg" aria-live="assertive"></div>
@@ -40,13 +43,14 @@
         <form id="teacherLoginForm" role="tabpanel" aria-hidden="true" style="display:none;" novalidate>
           <label for="teacherId">Teacher ID</label>
           <input type="text" id="teacherId" name="teacherId" autocomplete="username" required />
-          
+
           <label for="teacherEmail">Email (for verification)</label>
           <input type="email" id="teacherEmail" name="teacherEmail" autocomplete="email" required />
-          
+
           <label for="teacherPassword">Password</label>
-          <input type="password" id="teacherPassword" name="teacherPassword" autocomplete="current-password" required minlength="6" />
-          
+          <input type="password" id="teacherPassword" name="teacherPassword" autocomplete="current-password" required
+            minlength="6" />
+
           <button type="submit" class="submit-btn">Login</button>
           <button type="button" class="link-button" id="teacherForgotBtn">Forgot Password?</button>
           <div id="teacherLoginError" class="error-msg" aria-live="assertive"></div>
@@ -56,6 +60,32 @@
 
     <!-- Booking Container: hidden initially -->
     <div id="bookingContainer" style="display:none;">
+
+
+      <div id="filterContainer" style="display:flex; justify-content:center; gap:1rem; margin-bottom:20px;">
+        <select id="buildingFilter" aria-label="Filter by building">
+          <option value="">All Buildings</option>
+          <option value="building-1">Building 1</option>
+          <option value="building-2">Building 2</option>
+          <option value="building-3">Building 3</option>
+          <option value="building-4">Building 4</option>
+          <option value="building-5">Building 5</option>
+        </select>
+        <select id="timeFilter" aria-label="Filter by time slot">
+          <option value="">All Times</option>
+          <option value="08:00">08:00 - 09:00</option>
+          <option value="09:00">09:00 - 10:00</option>
+          <option value="10:00">10:00 - 11:00</option>
+          <option value="11:00">11:00 - 12:00</option>
+          <option value="12:00">12:00 - 13:00</option>
+          <option value="13:00">13:00 - 14:00</option>
+          <option value="14:00">14:00 - 15:00</option>
+          <option value="15:00">15:00 - 16:00</option>
+          <option value="16:00">16:00 - 17:00</option>
+          <option value="17:00">17:00 - 18:00</option>
+          <option value="18:00">18:00 - 19:00</option>
+        </select>
+      </div>
       <!-- Booking Section -->
       <section class="booking-section" aria-label="Classroom Booking Grid">
         <h2></h2>
@@ -73,14 +103,17 @@
       <h3 id="modalTitle">Reset Password</h3>
       <form id="resetPasswordForm" novalidate>
         <label for="newPassword1">New Password</label>
-        <input type="password" id="newPassword1" name="newPassword1" required minlength="6" autocomplete="new-password" />
-        
+        <input type="password" id="newPassword1" name="newPassword1" required minlength="6"
+          autocomplete="new-password" />
+
         <label for="newPassword2">Confirm New Password</label>
-        <input type="password" id="newPassword2" name="newPassword2" required minlength="6" autocomplete="new-password" />
-        
+        <input type="password" id="newPassword2" name="newPassword2" required minlength="6"
+          autocomplete="new-password" />
+
         <button type="submit">Set New Password</button>
       </form>
-      <button class="link-button" id="modalCloseBtn" aria-label="Close reset password dialog" style="margin-top:12px;">Cancel</button>
+      <button class="link-button" id="modalCloseBtn" aria-label="Close reset password dialog"
+        style="margin-top:12px;">Cancel</button>
       <div id="resetPasswordError" class="error-msg" aria-live="assertive"></div>
     </div>
   </div>
@@ -88,4 +121,5 @@
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>
+
 </html>
