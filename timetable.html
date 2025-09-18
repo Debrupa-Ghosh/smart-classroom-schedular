@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Horizontal Timetable Scheduler</title>
+
+    <style>
+        body {
+
+            background: #121214;
+            color: #00bfa5;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            height: auto !important;
+            min-height: 0 !important;
+        }
+
+        body {
+            display: block !important;
+            /* override flex if set */
+        }
+
+
+
+        .container {
+            max-width: 360px;
+            /* height: 200px;   <-- DELETE OR COMMENT THIS LINE */
+            margin: 3rem auto;
+            background: #1a1a20;
+            border-radius: 14px;
+            box-shadow: 0 0 20px #00796bcc;
+            padding: 1.5rem 1rem 2rem 1rem;
+            display: block;
+        }
+
+
+
+
+
+
+        h1 {
+            text-align: center;
+            color: #00bfa5;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 15px #00bfa5bb;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #00bfa5;
+            margin-top: 1rem;
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1.5px solid #444;
+            background: #222;
+            color: #eee;
+            font-size: 1rem;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #00bfa5;
+            box-shadow: 0 0 8px #00bfa5cc;
+        }
+
+        button.submit-btn {
+            background: #00bfa5;
+            color: #121212;
+            font-weight: 700;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            margin-top: 18px;
+            width: 100%;
+            box-shadow: 0 6px 24px #00bfa522;
+        }
+
+        button.submit-btn:hover {
+            background: #00897b;
+            box-shadow: 0 0 15px #00897bcc;
+        }
+
+        .error {
+            color: #ff5252;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        table {
+            
+                width: auto;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: 2rem;
+                background: #292933;
+                border-radius: 10px;
+                box-shadow: 0 0 15px #00bfa5bb;
+                overflow: hidden;
+            }
+
+            h2 {
+                text-align: center;
+            }
+
+        
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            color: #eee;
+            text-align: center;
+        }
+
+        th {
+            background-color: #00bfa5;
+            color: #121212;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Timetable Scheduler</h1>
+        <form id="paramsForm" autocomplete="off">
+            <label>Number of Classrooms:
+                <input type="number" id="numClassrooms" min="1" value="3" required />
+            </label>
+            <label>Number of Batches (comma separated):
+                <input type="text" id="batches" placeholder="Batch A, Batch B" required />
+            </label>
+            <label>Subjects (SubjectName:ClassesPerWeek, comma separated):
+                <input type="text" id="subjects" placeholder="Math:5, Physics:3" required />
+            </label>
+            <label>Max Classes per Day:
+                <input type="number" id="maxClasses" min="1" max="10" value="6" required />
+            </label>
+            <button type="submit" class="submit-btn">Generate Timetable</button>
+            <div id="errorMsg" class="error"></div>
+        </form>
+        <div id="timetableContainer"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('paramsForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const timetableContainer = document.getElementById('timetableContainer');
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            errorMsg.textContent = '';
+            timetableContainer.innerHTML = '';
+
+            const numClassrooms = parseInt(document.getElementById('numClassrooms').value);
+            const batchesInput = document.getElementById('batches').value.trim();
+            const subjectsInput = document.getElementById('subjects').value.trim();
+            const maxClasses = parseInt(document.getElementById('maxClasses').value);
+
+            if (!numClassrooms || !batchesInput || !subjectsInput || !maxClasses) {
+                errorMsg.textContent = 'Please fill all fields correctly.';
+                return;
+            }
+
+            const batches = batchesInput.split(',').map(s => s.trim()).filter(Boolean);
+            if (batches.length === 0) {
+                errorMsg.textContent = 'At least one batch is required.';
+                return;
+            }
+
+            const subjects = [];
+            for (const subj of subjectsInput.split(',')) {
+                const parts = subj.split(':').map(s => s.trim());
+                if (parts.length !== 2 || isNaN(parts[1]) || parts[1] <= 0) {
+                    errorMsg.textContent = 'Subjects must follow format SubjectName:ClassesPerWeek.';
+                    return;
+                }
+                subjects.push({ name: parts[0], classesPerWeek: parseInt(parts[1]) });
+            }
+
+            batches.forEach(batch => {
+                const timetable = {};
+                daysOfWeek.forEach(day => {
+                    timetable[day] = Array(maxClasses).fill('');
+                });
+
+                let dayIndex = 0;
+                let slotIndex = 0;
+                subjects.forEach(subject => {
+                    for (let i = 0; i < subject.classesPerWeek; i++) {
+                        while (timetable[daysOfWeek[dayIndex]][slotIndex] !== '') {
+                            slotIndex++;
+                            if (slotIndex >= maxClasses) {
+                                slotIndex = 0;
+                                dayIndex = (dayIndex + 1) % daysOfWeek.length;
+                            }
+                        }
+                        timetable[daysOfWeek[dayIndex]][slotIndex] = subject.name;
+                        slotIndex++;
+                        if (slotIndex >= maxClasses) {
+                            slotIndex = 0;
+                            dayIndex = (dayIndex + 1) % daysOfWeek.length;
+                        }
+                    }
+                });
+
+                generateTable(batch, timetable, maxClasses);
+            });
+        });
+
+        function generateTable(batchName, timetable, maxClasses) {
+            const batchTitle = document.createElement('h2');
+            batchTitle.textContent = `Timetable for ${batchName}`;
+            timetableContainer.appendChild(batchTitle);
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const trHead = document.createElement('tr');
+
+            const thEmpty = document.createElement('th');
+            thEmpty.textContent = "Class Slot";
+            trHead.appendChild(thEmpty);
+
+            daysOfWeek.forEach(day => {
+                const th = document.createElement('th');
+                th.textContent = day;
+                trHead.appendChild(th);
+            });
+
+            thead.appendChild(trHead);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+
+            for (let slot = 0; slot < maxClasses; slot++) {
+                const tr = document.createElement('tr');
+                let td = document.createElement('td');
+                td.textContent = `Class ${slot + 1}`;
+                tr.appendChild(td);
+
+                daysOfWeek.forEach(day => {
+                    td = document.createElement('td');
+                    td.textContent = timetable[day][slot] || '-';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
+
+            table.appendChild(tbody);
+            timetableContainer.appendChild(table);
+        }
+    </script>
+</body>
+
+</html>
